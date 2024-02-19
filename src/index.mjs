@@ -34,7 +34,6 @@ app.get('/api/users/:id', (req, res) => {
 
 app.post('/api/users', (req, res) => {
     const { body } = req;
-
     if(body.username, body.contactnuber, body.email){
         const newUser = {
             id: users[users.length - 1].id + 1, 
@@ -58,6 +57,18 @@ app.put("/api/users/:id", (req, res) => {
     if(userIndex === -1) return res.sendStatus(404);
 
     users[userIndex] = { id: parsedId, ...body }
+    return res.status(204).send({ msg: "Successfully update user", body });
+});
+
+app.patch("/api/users/:id", (req, res) => {
+    const { body, params: { id } } = req;
+    const parsedId = parseInt(id);
+    if(isNaN(parsedId)) return res.sendStatus(400);
+
+    const userIndex = users.findIndex((u) => u.id === parsedId);
+    if(userIndex === -1) return res.sendStatus(404);
+
+    users[userIndex] = { ...users[userIndex], ...body }
     return res.status(204).send({ msg: "Successfully update user", body });
 });
 
