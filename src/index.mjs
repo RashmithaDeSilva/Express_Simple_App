@@ -46,8 +46,19 @@ app.post('/api/users', (req, res) => {
         users.push(newUser);
         return res.status(201).send({ msg: "Successfully added user", newUser });
     }
-
     return res.status(404).send({ msg: "Invalid inputs !" });
+});
+
+app.put("/api/users/:id", (req, res) => {
+    const { body, params: { id } } = req;
+    const parsedId = parseInt(id);
+    if(isNaN(parsedId)) return res.sendStatus(400);
+
+    const userIndex = users.findIndex((u) => u.id === parsedId);
+    if(userIndex === -1) return res.sendStatus(404);
+
+    users[userIndex] = { id: parsedId, ...body }
+    return res.status(204).send({ msg: "Successfully update user", body });
 });
 
 app.listen(PORT, () => {
