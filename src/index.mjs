@@ -18,8 +18,8 @@ app.get('/', (req, res) => {
 
 app.get('/api/users', (req, res) => {
     const { query: { filter, value }} = req;
-    if(!filter && !value) return res.status(200).send(users);
     if(filter && value) return res.status(200).send(users.filter((u) => u[filter].includes(value)));
+    return res.status(200).send(users);
 });
 
 app.get('/api/users/:id', (req, res) => {
