@@ -2,6 +2,7 @@ import express from "express";
 
 
 const app = express();
+app.use(express.json());
 const PORT = process.env.PORT || 8000;
 const users = [
     { id: 1, username: "alen", contactnuber: 94712345689, email: "alen@gmail.com" },
@@ -29,6 +30,24 @@ app.get('/api/users/:id', (req, res) => {
     const user = users.find((user) => user.id === id);
     if(!user) return res.sendStatus(404);
     return res.status(200).send(user);
+});
+
+app.post('/api/users', (req, res) => {
+    const { body } = req;
+
+    if(body.username, body.contactnuber, body.email){
+        const newUser = {
+            id: users[users.length - 1].id + 1, 
+            username: body.username,
+            contactnuber: body.contactnuber,
+            email: body.email
+        }
+
+        users.push(newUser);
+        return res.status(201).send({ msg: "Successfully added user", newUser });
+    }
+
+    return res.status(404).send({ msg: "Invalid inputs !" });
 });
 
 app.listen(PORT, () => {
