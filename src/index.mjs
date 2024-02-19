@@ -10,13 +10,6 @@ const users = [
     { id: 4, username: "smith", contactnuber: 94712345689, email: "smith@gmail.com" },
     { id: 5, username: "alisa", contactnuber: 94712345689, email: "alisa@gmail.com" },
 ];
-const products = [
-    { id: 1, productname: "VGA", price: 1499.99, qty: 30 },
-    { id: 2, productname: "RAM", price: 300, qty: 50 },
-    { id: 3, productname: "CPU", price: 600, qty: 20 },
-    { id: 4, productname: "UPS", price: 499.99, qty: 10 },
-    { id: 5, productname: "PSU", price: 400, qty: 30 },
-];
 
 
 app.get('/', (req, res) => {
@@ -24,11 +17,9 @@ app.get('/', (req, res) => {
 });
 
 app.get('/api/users', (req, res) => {
-    res.status(200).send(users);
-});
-
-app.get('/api/products', (req, res) => {
-    res.status(200).send(products);
+    const { query: { filter, value }} = req;
+    if(!filter && !value) return res.status(200).send(users);
+    if(filter && value) return res.status(200).send(users.filter((u) => u[filter].includes(value)));
 });
 
 app.get('/api/users/:id', (req, res) => {
