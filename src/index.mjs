@@ -72,6 +72,18 @@ app.patch("/api/users/:id", (req, res) => {
     return res.status(204).send({ msg: "Successfully update user", body });
 });
 
+app.delete("/api/users/:id", (req, res) => {
+    const { id } = req.params;
+    const parsedId = parseInt(id);
+    if(isNaN(parsedId)) return res.sendStatus(400);
+
+    const userIndex = users.findIndex((u) => u.id === parsedId);
+    if(userIndex === -1) return res.sendStatus(404);
+
+    users.splice(userIndex, 1);
+    return res.status(200).send({ msg: "Successfully delete user" });
+});
+
 app.listen(PORT, () => {
     console.log(`Runing on Port ${PORT}`);
 });
