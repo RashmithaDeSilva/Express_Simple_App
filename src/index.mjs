@@ -1,4 +1,5 @@
 import express from "express";
+import { query, validationResult, body } from "express-validator";
 
 
 const app = express();
@@ -17,7 +18,7 @@ const loggingMiddleware = (req, res, next) => {
     next();
 };
 const resolveIndexByUserId = (req, res, next) => {
-    const { body, params: { id } } = req;
+    const { id } = req.params;
     const parsedId = parseInt(id);
     if(isNaN(parsedId)) return res.sendStatus(400);
 
@@ -34,7 +35,13 @@ app.get('/', (req, res) => {
     res.status(200).send("Hello express !");
 });
 
-app.get('/api/users', (req, res) => {
+app.get('/api/users', 
+    query('filter').isString().withMessage("Not string !")
+    .notEmpty().withMessage("Empty !")
+    .isLength({ min: 3, max: 10 }).withMessage("Must be at least 3 - 10 characters !"), 
+    (req, res) => {
+
+    const result = validationResult(req);
     const { query: { filter, value }} = req;
     if(filter && value) return res.status(200).send(users.filter((u) => u[filter].includes(value)));
     return res.status(200).send(users);
@@ -45,9 +52,37 @@ app.get('/api/users/:id', resolveIndexByUserId, (req, res) => {
     return res.send(users[userIndex]);
 });
 
-app.post('/api/users', (req, res) => {
+app.post('/api/users', 
+    [
+        body('username').notEmpty().withMessage({ value: "USERNAME", error: 'Canot empty !' })
+        .isString().withMessage({ value: "USERNAME", error: 'Not string !' })
+        .isLength({ min: 3, max: 10 }).withMessage({ value: "USERNAME", error: 'Must be at least 3 - 10 characters !' }),
+
+        body('contactnuber').isInt().withMessage({ value: "CONTACTNUMBER", error: 'Not int !' })
+        .isLength({ min: 10, max: 11}).withMessage({ value: "CONTACTNUMBER", error: 'Ust be at least 10 - 11 numbers !' }),
+
+        body('email').isString().withMessage({ value: "EMAIL", error: 'Not string !' })
+        .isLength({ min: 10, max: 50 }).withMessage({ value: "EMAIL", error: 'Must be at least 10 - 50 characters !' })
+    ], 
+    (req, res) => {
+
+    const result = validationResult(req);
+    console.log(result.errors.filter((e) => e.msg.value === "USERNAME"));
     const { body } = req;
-    if(body.username, body.contactnuber, body.email){
+
+    if(result.errors.filter((e) => e.msg.value === "USERNAME").length === 0)
+    return res.status(404).send(result.errors.map(error => error.msg.error));
+    
+    if(
+        body.contactnuber.notEmpty 
+        && result.errors.filter((e) => e.msg.value === "CONTACTNUMBER").length === 0 
+        || body.email.notEmpty 
+        && result.errors.filter((e) => e.msg.value === "EMAIL").length === 0 
+        || body.contactnuber.notEmpty && body.email.notEmpty 
+        && result.errors.filter((e) => e.msg.value === "CONTACTNUMBER").length === 0
+        && result.errors.filter((e) => e.msg.value === "EMAIL").length === 0 
+    ){
+
         const newUser = {
             id: users[users.length - 1].id + 1, 
             username: body.username,
@@ -58,7 +93,8 @@ app.post('/api/users', (req, res) => {
         users.push(newUser);
         return res.status(201).send({ msg: "Successfully added user", newUser });
     }
-    return res.status(404).send({ msg: "Invalid inputs !" });
+
+    return res.status(404).send(result.errors);
 });
 
 app.put("/api/users/:id", resolveIndexByUserId, (req, res) => {
