@@ -70,17 +70,26 @@ app.post('/api/users',
     console.log(result.errors.filter((e) => e.msg.value === "USERNAME"));
     const { body } = req;
 
-    if(result.errors.filter((e) => e.msg.value === "USERNAME").length === 0)
-    return res.status(404).send(result.errors.map(error => error.msg.error));
+    if(result.errors.filter((e) => e.msg.value === "USERNAME").length !== 0)
+    return res.status(404).send(result.errors.map((e) => e.msg.error));
+
+    console.log();
     
     if(
-        body.contactnuber.notEmpty 
-        && result.errors.filter((e) => e.msg.value === "CONTACTNUMBER").length === 0 
-        || body.email.notEmpty 
-        && result.errors.filter((e) => e.msg.value === "EMAIL").length === 0 
-        || body.contactnuber.notEmpty && body.email.notEmpty 
-        && result.errors.filter((e) => e.msg.value === "CONTACTNUMBER").length === 0
-        && result.errors.filter((e) => e.msg.value === "EMAIL").length === 0 
+        (
+            body.contactnuber !== undefined && body.contactnuber !== null 
+            && result.errors.filter((e) => e.msg.value === "CONTACTNUMBER").length === 0
+        ) 
+        || (
+            body.email && body.email.trim() !== '' 
+            && result.errors.filter((e) => e.msg.value === "EMAIL").length === 0
+        ) 
+        || (
+            body.contactnuber !== undefined && body.contactnuber !== null 
+            && body.email && body.email.trim() !== ''
+            && result.errors.filter((e) => e.msg.value === "CONTACTNUMBER").length === 0
+            && result.errors.filter((e) => e.msg.value === "EMAIL").length === 0
+        ) 
     ){
 
         const newUser = {
@@ -94,7 +103,7 @@ app.post('/api/users',
         return res.status(201).send({ msg: "Successfully added user", newUser });
     }
 
-    return res.status(404).send(result.errors);
+    return res.status(404).send("Email or Contact number is required !");
 });
 
 app.put("/api/users/:id", resolveIndexByUserId, (req, res) => {
