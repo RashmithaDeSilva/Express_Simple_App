@@ -1,3 +1,5 @@
+export const admin = [{ id: 1, username: "admin", contactnuber: 947987654321, email: "admin@gmail.com" }];
+
 export const users = [
     { id: 1, username: "alen", contactnuber: 94712345689, email: "alen@gmail.com" },
     { id: 2, username: "jone", contactnuber: 94712345689, email: "jone@gmail.com" },

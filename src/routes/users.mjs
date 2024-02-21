@@ -1,9 +1,12 @@
 import { Router } from "express";
-import { query, validationResult, body, matchedData } from "express-validator";
+import { query, validationResult, matchedData, checkSchema } from "express-validator";
+import { userValidetionSchema, contactnuberValidetionSchema, emailValidetionSchema, userOptionelValidetionSchema } from "../utils/validationSchemas.mjs";
 import { users } from "../db/constants.mjs";
+import { resolveIndexByUserId } from "../utils/middlewares.mjs";
 
 
 const router = Router();
+// app.use(resolveIndexByUserId); // user midelwear globely
 
 
 router.get('/api/users', 
@@ -27,17 +30,16 @@ router.get('/api/users',
     return res.status(404).send(result.errors.map((e) => e.msg.error));
 });
 
+router.get('/api/users/:id', resolveIndexByUserId, (req, res) => {
+    const { userIndex } = req;
+    return res.send(users[userIndex]);
+});
+
 router.post('/api/users', 
-    [
-        body('username').notEmpty().withMessage({ value: "USERNAME", error: 'User name canot empty !' })
-        .isString().withMessage({ value: "USERNAME", error: 'User name not string !' })
-        .isLength({ min: 3, max: 10 }).withMessage({ value: "USERNAME", error: 'User name must be at least 3 - 10 characters !' }),
-
-        body('contactnuber').isInt().withMessage({ value: "CONTACTNUMBER", error: 'Contactnuber not int !' })
-        .isLength({ min: 10, max: 11}).withMessage({ value: "CONTACTNUMBER", error: 'Contactnuber ust be at least 10 - 11 numbers !' }),
-
-        body('email').isString().withMessage({ value: "EMAIL", error: 'Email not string !' })
-        .isLength({ min: 10, max: 50 }).withMessage({ value: "EMAIL", error: 'Email must be at least 10 - 50 characters !' })
+    [   
+        checkSchema(userValidetionSchema), 
+        checkSchema(contactnuberValidetionSchema),
+        checkSchema(emailValidetionSchema),
     ], 
     (req, res) => {
 
@@ -76,6 +78,35 @@ router.post('/api/users',
     }
 
     return res.status(404).send("Email or Contact number is required !");
+});
+
+router.put("/api/users/:id", 
+    [
+        resolveIndexByUserId,
+        checkSchema(userValidetionSchema), 
+        checkSchema(contactnuberValidetionSchema),
+        checkSchema(emailValidetionSchema),
+    ], 
+    (req, res) => {
+
+    const result = validationResult(req);
+    const { body, userIndex } = req;
+
+    if(result.errors.length !== 0) return res.status(404).send(result.errors.map((e) => e.msg.error));
+    users[userIndex] = { id: users[userIndex].id, ...body }
+    return res.status(204).send({ msg: "Successfully update user", body });
+});
+
+router.patch("/api/users/:id", resolveIndexByUserId, (req, res) => {
+    const { body, userIndex } = req;
+    users[userIndex] = { ...users[userIndex], ...body }
+    return res.status(204).send({ msg: "Successfully update user", body });
+});
+
+router.delete("/api/users/:id", resolveIndexByUserId, (req, res) => {
+    const { userIndex } = req;
+    users.splice(userIndex, 1);
+    return res.status(200).send({ msg: "Successfully delete user" });
 });
 
 
