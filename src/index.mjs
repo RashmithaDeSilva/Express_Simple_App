@@ -1,5 +1,5 @@
 import express from "express";
-import { query, validationResult, body } from "express-validator";
+import { query, validationResult, body, matchedData } from "express-validator";
 
 
 const app = express();
@@ -36,15 +36,24 @@ app.get('/', (req, res) => {
 });
 
 app.get('/api/users', 
-    query('filter').isString().withMessage("Not string !")
-    .notEmpty().withMessage("Empty !")
-    .isLength({ min: 3, max: 10 }).withMessage("Must be at least 3 - 10 characters !"), 
+    [
+        query('filter').isString().withMessage({ value: "FILTER", error: 'Filter not string !' })
+        .notEmpty().withMessage({ value: "FILTER", error: 'Filter empty !' })
+        .isLength({ min: 3, max: 10 }).withMessage({ value: "FILTER", error: 'Filter must be at least 3 - 10 characters !' }),
+
+        query('value').notEmpty().withMessage({ value: "VALUE", error: 'Value empty !' })
+    ], 
     (req, res) => {
 
     const result = validationResult(req);
     const { query: { filter, value }} = req;
-    if(filter && value) return res.status(200).send(users.filter((u) => u[filter].includes(value)));
-    return res.status(200).send(users);
+
+    if(filter === undefined && value === undefined) return res.status(200).send(users);
+    if(filter && value) {
+        if(users.filter((u) => u[filter].includes(value)).length === 0) return res.status(404).send("Invalide filter or value");
+        return res.status(200).send(users.filter((u) => u[filter].includes(value)));
+    }
+    return res.status(404).send(result.errors.map((e) => e.msg.error));
 });
 
 app.get('/api/users/:id', resolveIndexByUserId, (req, res) => {
@@ -54,26 +63,23 @@ app.get('/api/users/:id', resolveIndexByUserId, (req, res) => {
 
 app.post('/api/users', 
     [
-        body('username').notEmpty().withMessage({ value: "USERNAME", error: 'Canot empty !' })
-        .isString().withMessage({ value: "USERNAME", error: 'Not string !' })
-        .isLength({ min: 3, max: 10 }).withMessage({ value: "USERNAME", error: 'Must be at least 3 - 10 characters !' }),
+        body('username').notEmpty().withMessage({ value: "USERNAME", error: 'User name canot empty !' })
+        .isString().withMessage({ value: "USERNAME", error: 'User name not string !' })
+        .isLength({ min: 3, max: 10 }).withMessage({ value: "USERNAME", error: 'User name must be at least 3 - 10 characters !' }),
 
-        body('contactnuber').isInt().withMessage({ value: "CONTACTNUMBER", error: 'Not int !' })
-        .isLength({ min: 10, max: 11}).withMessage({ value: "CONTACTNUMBER", error: 'Ust be at least 10 - 11 numbers !' }),
+        body('contactnuber').isInt().withMessage({ value: "CONTACTNUMBER", error: 'Contactnuber not int !' })
+        .isLength({ min: 10, max: 11}).withMessage({ value: "CONTACTNUMBER", error: 'Contactnuber ust be at least 10 - 11 numbers !' }),
 
-        body('email').isString().withMessage({ value: "EMAIL", error: 'Not string !' })
-        .isLength({ min: 10, max: 50 }).withMessage({ value: "EMAIL", error: 'Must be at least 10 - 50 characters !' })
+        body('email').isString().withMessage({ value: "EMAIL", error: 'Email not string !' })
+        .isLength({ min: 10, max: 50 }).withMessage({ value: "EMAIL", error: 'Email must be at least 10 - 50 characters !' })
     ], 
     (req, res) => {
 
     const result = validationResult(req);
-    console.log(result.errors.filter((e) => e.msg.value === "USERNAME"));
-    const { body } = req;
+    const body = matchedData(req);
 
     if(result.errors.filter((e) => e.msg.value === "USERNAME").length !== 0)
     return res.status(404).send(result.errors.map((e) => e.msg.error));
-
-    console.log();
     
     if(
         (
