@@ -17,7 +17,7 @@ app.listen(PORT, () => {
 });
 
 app.get('/', (req, res) => {
-    res.cookie("key", "value", { maxAge: 60000 * 60, signed: true });
+    // res.cookie("key", "value", { maxAge: 60000 * 60, signed: true });
     res.status(200).send("Hello express !");
 });
 

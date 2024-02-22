@@ -6,9 +6,6 @@ const router = Router();
 
 
 router.get('/app/products', (req, res) => {
-    console.log(req.headers.cookie);
-    console.log(req.cookies);
-    console.log(req.signedCookies.key);
     res.status(200).send(products);
 });
 
