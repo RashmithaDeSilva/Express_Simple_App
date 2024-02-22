@@ -1,4 +1,5 @@
-FROM node:latest
+# Use an official Node.js runtime as a base image
+FROM node:14
 
 # Create app directory
 WORKDIR /app
@@ -16,7 +17,7 @@ RUN npm install express express-validator
 COPY ./src .
 
 # Expose the port the app runs on
-EXPOSE 3000
+EXPOSE 3001
 
 # Serve the app
 # CMD ["npm", "run", "start:dev"]
