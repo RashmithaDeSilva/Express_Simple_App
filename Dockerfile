@@ -11,7 +11,7 @@ COPY package*.json ./
 RUN npm install
 
 # Install Express and Express Validation
-RUN npm install express express-validator
+RUN npm install express express-validator cookie-parser
 
 # Copy the rest of the application code
 COPY ./src .
