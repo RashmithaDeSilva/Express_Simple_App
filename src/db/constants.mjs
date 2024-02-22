@@ -7,3 +7,11 @@ export const users = [
     { id: 4, username: "smith", contactnuber: 94712345689, email: "smith@gmail.com" },
     { id: 5, username: "alisa", contactnuber: 94712345689, email: "alisa@gmail.com" },
 ];
+
+export const products = [
+    { id: 1, productName: "CPU", qty: 20 },
+    { id: 2, productName: "RAM", qty: 60 },
+    { id: 3, productName: "GPU", qty: 10 },
+    { id: 4, productName: "UPS", qty: 30 },
+    { id: 5, productName: "PSU", qty: 50 },
+];
