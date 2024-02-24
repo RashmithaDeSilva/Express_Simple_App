@@ -2,7 +2,8 @@ import express from "express";
 import router from "./routes/router.mjs";
 import cookieParser from "cookie-parser";
 import session from "express-session";
-import { users } from "./db/constants.mjs";
+import passport from "passport";
+import "./stratagies/local-stratagy.mjs"
 
 
 const app = express();
@@ -19,6 +20,8 @@ app.use(session({
         maxAge: 60000 * 60
     }
  }));
+app.use(passport.initialize());
+app.use(passport.session());
 app.use(router);
 
 const PORT = process.env.PORT || 8000;
@@ -40,19 +43,32 @@ app.get('/api', (req, res) => {
     res.redirect("/");
 });
 
-app.post('/api/auth', (req, res) => {
-    const { body: { username, password } } = req;
-    const user = users.find(u => u.username === username);
+// app.post('/api/auth', (req, res) => {
+//     const { body: { username, password } } = req;
+//     const user = users.find(u => u.username === username);
 
-    if(!user || user.password !== password) return res.status(404).send({ mgs: "BAD CREDENTIALS !" });
-    req.session.user = user;
-    return res.status(200).send(user);
+//     if(!user || user.password !== password) return res.status(404).send({ mgs: "BAD CREDENTIALS !" });
+//     req.session.user = user;
+//     return res.status(200).send(user);
+// });
+
+app.post('/api/auth', passport.authenticate('local'), (req, res) => {
+    res.sendStatus(200);
 });
 
 app.get('/api/auth/status', (req, res) => {
-    return req.session.user 
-        ? res.status(200).send(req.session.user) 
+    return req.user 
+        ? res.status(200).send(req.user) 
         : res.status(401).send({ mgs: "NOT AUTHENTICATED !" })
+});
+
+app.post('/api/auth/logout', (req, res) => {
+    if(!req.user) return res.sendStatus(401);
+
+    req.logOut(e => {
+        if(e) return res.sendStatus(400);
+        res.sendStatus(200);
+    })
 });
 
 app.post('/api/cart', (req, res) => {
