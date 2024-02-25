@@ -3,10 +3,15 @@ import router from "./routes/router.mjs";
 import cookieParser from "cookie-parser";
 import session from "express-session";
 import passport from "passport";
+import mongoose from "mongoose";
 import "./stratagies/local-stratagy.mjs"
 
 
 const app = express();
+
+mongoose.connect('mongodb://192.168.8.139:27017/express_test')
+    .then(() => console.log('Connected to Database'))
+    .catch(e => console.log(`Error: ${ e } !`));
 
 app.use(express.json());
 app.use(cookieParser('secret'));
@@ -19,7 +24,7 @@ app.use(session({
     cookie: {
         maxAge: 60000 * 60
     }
- }));
+}));
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(router);
@@ -57,6 +62,7 @@ app.post('/api/auth', passport.authenticate('local'), (req, res) => {
 });
 
 app.get('/api/auth/status', (req, res) => {
+    console.log(req.user);
     return req.user 
         ? res.status(200).send(req.user) 
         : res.status(401).send({ mgs: "NOT AUTHENTICATED !" })

@@ -46,6 +46,27 @@ export const userOptionelValidetionSchema = {
     }
 };
 
+export const passwordValidetionSchema = {
+    password: {
+        isString: {
+            errorMessage: {
+                value: "PASSWORD", 
+                error: 'Password not string !'
+            }
+        },
+        isLength: {
+            options: {
+                min: 3,
+                max: 10
+            },
+            errorMessage: {
+                value: "PASSWORD", 
+                error: 'Password must be at least 3 - 10 characters !'
+            }
+        }
+    }
+};
+
 export const contactnuberValidetionSchema = {
     contactnuber: {
         isInt: {

@@ -1,8 +1,9 @@
 import { Router } from "express";
 import { query, validationResult, matchedData, checkSchema } from "express-validator";
-import { userValidetionSchema, contactnuberValidetionSchema, emailValidetionSchema, userOptionelValidetionSchema } from "../utils/validationSchemas.mjs";
+import { userValidetionSchema, contactnuberValidetionSchema, emailValidetionSchema, passwordValidetionSchema } from "../utils/validationSchemas.mjs";
 import { users } from "../db/constants.mjs";
 import { resolveIndexByUserId } from "../utils/middlewares.mjs";
+import { User } from "../mongoose/schemas/user.mjs";
 
 
 const router = Router();
@@ -35,46 +36,95 @@ router.get('/api/users/:id', resolveIndexByUserId, (req, res) => {
     return res.send(users[userIndex]);
 });
 
+// router.post('/api/users', 
+//     [   
+//         checkSchema(userValidetionSchema), 
+//         checkSchema(contactnuberValidetionSchema),
+//         checkSchema(emailValidetionSchema),
+//     ], 
+//     (req, res) => {
+
+//     const result = validationResult(req);
+//     const body = matchedData(req);
+
+//     if(result.errors.filter((e) => e.msg.value === "USERNAME").length !== 0)
+//     return res.status(404).send(result.errors.map((e) => e.msg.error));
+    
+//     if(
+//         (
+//             body.contactnuber !== undefined && body.contactnuber !== null 
+//             && result.errors.filter((e) => e.msg.value === "CONTACTNUMBER").length === 0
+//         ) 
+//         || (
+//             body.email && body.email.trim() !== '' 
+//             && result.errors.filter((e) => e.msg.value === "EMAIL").length === 0
+//         ) 
+//         || (
+//             body.contactnuber !== undefined && body.contactnuber !== null 
+//             && body.email && body.email.trim() !== ''
+//             && result.errors.filter((e) => e.msg.value === "CONTACTNUMBER").length === 0
+//             && result.errors.filter((e) => e.msg.value === "EMAIL").length === 0
+//         ) 
+//     ){
+
+//         const newUser = {
+//             id: users[users.length - 1].id + 1, 
+//             username: body.username,
+//             contactnuber: body.contactnuber,
+//             email: body.email
+//         }
+
+//         users.push(newUser);
+//         return res.status(201).send({ msg: "Successfully added user", newUser });
+//     }
+
+//     return res.status(404).send("Email or Contact number is required !");
+// });
+
 router.post('/api/users', 
     [   
         checkSchema(userValidetionSchema), 
         checkSchema(contactnuberValidetionSchema),
         checkSchema(emailValidetionSchema),
+        checkSchema(passwordValidetionSchema)
     ], 
-    (req, res) => {
+    async (req, res) => {
 
     const result = validationResult(req);
-    const body = matchedData(req);
-
+    const data = matchedData(req);
+        
     if(result.errors.filter((e) => e.msg.value === "USERNAME").length !== 0)
+    return res.status(404).send(result.errors.map((e) => e.msg.error));
+
+    if(result.errors.filter((e) => e.msg.value === "PASSWORD").length !== 0)
     return res.status(404).send(result.errors.map((e) => e.msg.error));
     
     if(
         (
-            body.contactnuber !== undefined && body.contactnuber !== null 
+            data.contactnuber !== undefined && data.contactnuber !== null 
             && result.errors.filter((e) => e.msg.value === "CONTACTNUMBER").length === 0
         ) 
         || (
-            body.email && body.email.trim() !== '' 
+            data.email && data.email.trim() !== '' 
             && result.errors.filter((e) => e.msg.value === "EMAIL").length === 0
         ) 
         || (
-            body.contactnuber !== undefined && body.contactnuber !== null 
-            && body.email && body.email.trim() !== ''
+            data.contactnuber !== undefined && data.contactnuber !== null 
+            && data.email && data.email.trim() !== ''
             && result.errors.filter((e) => e.msg.value === "CONTACTNUMBER").length === 0
             && result.errors.filter((e) => e.msg.value === "EMAIL").length === 0
         ) 
     ){
-
-        const newUser = {
-            id: users[users.length - 1].id + 1, 
-            username: body.username,
-            contactnuber: body.contactnuber,
-            email: body.email
+        
+        const newUser = new User(data);
+        try {
+            const saveUser = await newUser.save();
+            return res.status(201).send({ msg: "Successfully added user", newUser });
+    
+        } catch(e) {
+            // console.log(e);
+            return res.sendStatus(400);
         }
-
-        users.push(newUser);
-        return res.status(201).send({ msg: "Successfully added user", newUser });
     }
 
     return res.status(404).send("Email or Contact number is required !");
