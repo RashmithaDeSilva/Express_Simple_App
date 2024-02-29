@@ -62,10 +62,15 @@ app.post('/api/auth', passport.authenticate('local'), (req, res) => {
 });
 
 app.get('/api/auth/status', (req, res) => {
-    console.log(req.user);
-    return req.user 
-        ? res.status(200).send(req.user) 
-        : res.status(401).send({ mgs: "NOT AUTHENTICATED !" })
+    try {
+        console.log(req.passport);
+        return req.user 
+            ? res.status(200).send(req.user)
+            : res.status(401).send({ message: "NOT AUTHENTICATED!" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send({ error: 'Internal Server Error' });
+    }
 });
 
 app.post('/api/auth/logout', (req, res) => {

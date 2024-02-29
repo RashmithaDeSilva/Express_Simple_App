@@ -1,5 +1,5 @@
 # Use an official Node.js runtime as a base image
-FROM node:14
+FROM node:latest
 
 # Create app directory
 WORKDIR /app
@@ -11,13 +11,13 @@ COPY package*.json ./
 RUN npm install
 
 # Install Express and Express Validation
-RUN npm install express express-validator cookie-parser express-session passport passport-local mongoose
+RUN npm install express nodemon express-validator cookie-parser express-session passport passport-local mongoose bcrypt
 
 # Copy the rest of the application code
 COPY ./src .
 
 # Expose the port the app runs on
-EXPOSE 3001
+EXPOSE 3000
 
 # Serve the app
 # CMD ["npm", "run", "start:dev"]
