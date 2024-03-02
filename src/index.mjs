@@ -1,4 +1,4 @@
-import express from "express";
+import express, { response } from "express";
 import router from "./routes/router.mjs";
 import cookieParser from "cookie-parser";
 import session from "express-session";
@@ -6,6 +6,7 @@ import passport from "passport";
 import mongoose from "mongoose";
 import MongoStore from "connect-mongo";
 import "./stratagies/local-stratagy.mjs"
+// import "./stratagies/discord-stratagy.mjs"
 
 
 const app = express();
@@ -61,7 +62,7 @@ app.get('/api', (req, res) => {
 //     return res.status(200).send(user);
 // });
 
-app.post('/api/auth', passport.authenticate('local'), (req, res) => {
+app.post('/api/auth', passport.authenticate("local"), (req, res) => {
     res.sendStatus(200);
 });
 
@@ -105,4 +106,11 @@ app.post('/api/cart', (req, res) => {
 app.get('/api/cart', (req, res) => {
     if(!req.session.user) return res.sendStatus(401);
     return res.send(req.session.cart ?? []);
+});
+
+app.get('/api/auth/discord', passport.authenticate("discord"));
+
+app.get('/api/auth/discord/redirect', passport.authenticate("discord"), (req, res) => {
+    
+    response.sendStatus(200);
 });

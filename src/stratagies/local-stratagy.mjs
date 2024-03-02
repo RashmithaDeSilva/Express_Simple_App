@@ -27,7 +27,7 @@ export default passport.use(
             if(!findUser) throw new Error('User Not Found !');
             
             // findUser.password !== password
-            if(comparePassword(password, findUser.password)) throw new Error('Invalid Credentials !');
+            if(!comparePassword(password, findUser.password)) throw new Error('Invalid Credentials !');
             done(null, findUser);
 
         } catch(e) {
