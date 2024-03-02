@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import session from "express-session";
 import passport from "passport";
 import mongoose from "mongoose";
+import MongoStore from "connect-mongo";
 import "./stratagies/local-stratagy.mjs"
 
 
@@ -20,10 +21,13 @@ app.use(session({
     // This will worck only user do enything 
     // if this will true then session will set for all users for wisitin site
     saveUninitialized: false,
-    resave: false,
+    resave: true,
     cookie: {
         maxAge: 60000 * 60
-    }
+    },
+    store: MongoStore.create({
+        client: mongoose.connection.getClient(),
+    }),
 }));
 app.use(passport.initialize());
 app.use(passport.session());
@@ -63,12 +67,13 @@ app.post('/api/auth', passport.authenticate('local'), (req, res) => {
 
 app.get('/api/auth/status', (req, res) => {
     try {
-        console.log(req.passport);
+        // console.log(req.session.passport.user);
+        // console.log(session);
         return req.user 
-            ? res.status(200).send(req.user)
+            ? res.status(200).send("Done")
             : res.status(401).send({ message: "NOT AUTHENTICATED!" });
     } catch (error) {
-        console.error(error);
+        // console.error(error);
         res.status(500).send({ error: 'Internal Server Error' });
     }
 });
