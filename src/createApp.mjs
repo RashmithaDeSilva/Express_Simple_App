@@ -18,6 +18,7 @@ export function createApp() {
         // This will worck only user do enything 
         // if this will true then session will set for all users for wisitin site
         saveUninitialized: false,
+        // This will update session exp time every time
         resave: true,
         cookie: {
             maxAge: 60000 * 60
